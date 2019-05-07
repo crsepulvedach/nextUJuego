@@ -23,27 +23,44 @@ window.onload = function() {
   };
 
 
-
-  var caramelos = [
-    "image\\1.png",
-  "image\\2.png",
-  "image\\3.png",
-  "image\\4.png"];
+  var caramelos = ["image\\1.png", "image\\2.png",
+                   "image\\3.png", "image\\4.png"];
 
   var columnas = $(".panel-tablero div");
 
+
+  function titulo(){
+    $(".main-titulo").animate({color: '#E4D8B8'},1000);
+    $(".main-titulo").animate({color: '#DCFF0E'},1000);
+  };
+
+  function cuentaatras(){
+    $('#timer').countdown({until: +300});
+  }
+
+  function mostrarHora() {
+    var fecha = new Date(), // nuevo objeto Fecha
+        hora = fecha.getHours() + ":" + fecha.getMinutes() + ":" + fecha.getSeconds();
+    $('.data-info2').text(hora);
+  }
+
+
+
 // Initialize the game
-function init() {
-// Initialize the two-dimensional tile array
-for (var i = 0; i < columnas.length; i++) {
+  function init() {
+    // Initialize the two-dimensional tile array
+    for (var i = 0; i < columnas.length; i++) {
       for (var j = 0; j < 7; j++) {
         var img = Math.floor(Math.random() * (4 - 1 + 1));
         $(columnas[i]).append("<img src='" + caramelos[img] +
           "' class='elemento' width='100px' height='100px'>");
       }
     }
-// (...)
-}
+  }
 
 init();
+
+//setInterval(mostrarHora, 1000); // la función "mostrarHora" se ejecuta cada segundo
+setInterval(titulo, 1500);
+setInterval(cuentaatras, 1000)
 }
