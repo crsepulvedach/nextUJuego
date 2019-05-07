@@ -1,135 +1,57 @@
-(function (root, factory) {
-  'use strict'
-  if (typeof define === 'function' && define.amd) define([], factory)
-  else if (typeof exports === 'object') module.exports = factory()
-  else root.Timer = factory()
-}(this, function () {
-  'use strict'
 
-  var defaultOptions = {
-    tick    : 1,
-    onstart : null,
-    ontick  : null,
-    onpause : null,
-    onstop  : null,
-    onend   : null
-  }
 
-  var Timer = function (options) {
-    if (!(this instanceof Timer)) return new Timer(options)
-    this._ = {
-      id       : +new Date,
-      options  : {},
-      duration : 0,
-      status   : 'initialized',
-      start    : 0,
-      measures : []
-    }
-    for (var prop in defaultOptions) this._.options[prop] = defaultOptions[prop]
-    this.options(options)
-  }
+/*
+function startTimer() {
+  var presentTime = document.getElementById('timer').innerHTML;
+  var timeArray = presentTime.split(/[:]+/);
+  var m = timeArray[0];
+  var s = checkSecond((timeArray[1] - 1));
+  if(s==59){m=m-1}
+  if(m<0){alert('timer completed')}
 
-  Timer.prototype.start = function (duration) {
-      if (!+duration && !this._.duration) return this
-      duration && (duration *= 1000)
-      if (this._.timeout && this._.status === 'started') return this
-      this._.duration = duration || this._.duration
-      this._.timeout = setTimeout(end.bind(this), this._.duration)
-      if (typeof this._.options.ontick === 'function')
-        this._.interval = setInterval(function () {
-          trigger.call(this, 'ontick', this.getDuration())
-        }.bind(this), +this._.options.tick * 1000)
-      this._.start = +new Date
-      this._.status = 'started'
-      trigger.call(this, 'onstart', this.getDuration())
-      return this
-    }
+  document.getElementById('timer').innerHTML =
+    m + ":" + s;
+  setTimeout(startTimer, 1000);
+}
 
-  Timer.prototype.pause = function () {
-    if (this._.status !== 'started') return this
-    this._.duration -= (+new Date - this._.start)
-    clear.call(this, false)
-    this._.status = 'paused'
-    trigger.call(this, 'onpause')
-    return this
-  }
+function checkSecond(sec) {
+  if (sec < 10 && sec >= 0) {sec = "0" + sec}; // add zero in front of numbers < 10
+  if (sec < 0) {sec = "59"};
+  return sec;
+}
+*/
 
-  Timer.prototype.stop = function () {
-    if (!/started|paused/.test(this._.status)) return this
-    clear.call(this, true)
-    this._.status = 'stopped'
-    trigger.call(this, 'onstop')
-    return this
-  }
+// 10 minutes from now
+//var time_in_minutes = 2;
+//var current_time = Date.parse(new Date());
+//var deadline = new Date(current_time + time_in_minutes*60*1000);
+function tablero(){
+  $(".panel-tablero").hide(1800);
+  $(".time").hide(1800);
+  $(".panel-score").animate({width:"100%"});
+  $(".panel-score").prepend("<h2 style='text-align: center;' class='data-titulo title-fin'>Fin del Juego</h2>")
+}
 
-  Timer.prototype.getDuration = function () {
-    if (this._.status === 'started')
-      return this._.duration - (+new Date - this._.start)
-    if (this._.status === 'paused') return this._.duration
-    return 0
-  }
+function time_remaining(endtime){
+	var t = Date.parse(endtime) - Date.parse(new Date());
+	var seconds = Math.floor( (t/1000) % 60 );
+	var minutes = Math.floor( (t/1000/60) % 60 );
+	var hours = Math.floor( (t/(1000*60*60)) % 24 );
+	var days = Math.floor( t/(1000*60*60*24) );
+	return {'total':t, 'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds};
+}
+function run_clock(id){
+  var time_in_minutes = 2;
+  var current_time = Date.parse(new Date());
+  var endtime = new Date(current_time + time_in_minutes*60*1000);
 
-  Timer.prototype.getStatus = function () {
-    return this._.status
-  }
-
-  Timer.prototype.options = function (option, value) {
-    if (option && value) this._.options[option] = value
-    if (!value && typeof option === 'object')
-      for (var prop in option)
-        if (this._.options.hasOwnProperty(prop))
-          this._.options[prop] = option[prop]
-    return this
-  }
-
-  Timer.prototype.on = function (option, value) {
-    if (typeof option !== 'string' || typeof value !== 'function') return this
-    if (!(/^on/).test(option))
-      option = 'on' + option
-    if (this._.options.hasOwnProperty(option))
-      this._.options[option] = value
-    return this
-  }
-
-  Timer.prototype.off = function (option) {
-    if (typeof option !== 'string') return this
-    option = option.toLowerCase()
-    if (option === 'all') {
-      this._.options = defaultOptions
-      return this
-    }
-    if (!(/^on/).test(option)) option = 'on' + option
-    if (this._.options.hasOwnProperty(option))
-      this._.options[option] = defaultOptions[option]
-    return this
-  }
-
-  Timer.prototype.measureStart = function (label) {
-    this._.measures[label || ''] = +new Date
-    return this
-  }
-
-  Timer.prototype.measureStop = function (label) {
-    return +new Date - this._.measures[label || '']
-  }
-
-  function end () {
-    clear.call(this)
-    this._.status = 'stopped'
-    trigger.call(this, 'onend')
-  }
-
-  function trigger (event) {
-    var callback = this._.options[event],
-      args = [].slice.call(arguments, 1)
-    typeof callback === 'function' && callback.apply(this, args)
-  }
-
-  function clear (clearDuration) {
-    clearTimeout(this._.timeout)
-    clearInterval(this._.interval)
-    if (clearDuration === true) this._.duration = 0
-  }
-
-  return Timer
-}))
+	var clock = document.getElementById(id);
+	function update_clock(){
+		var t = time_remaining(endtime);
+		clock.innerHTML = t.minutes+':'+t.seconds;
+		if(t.total<=0){ clearInterval(timeinterval);tablero(); }
+	}
+	update_clock(); // run function once at first to avoid delay
+	var timeinterval = setInterval(update_clock,1000);
+}
+//run_clock('clockdiv',deadline);
